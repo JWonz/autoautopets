@@ -1,7 +1,6 @@
 from sap_metadata_cacher import read_most_recent_json
 
 
-
 """
 Pipeline:
     StartOfTurn
@@ -45,7 +44,6 @@ def commandline_ui():
     # get list of animals based on pack used
     animals = [p for p in sap_data["pets"].values()]
 
-
     turn = 1
     hearts = 10
     trophy = 0
@@ -55,7 +53,6 @@ def commandline_ui():
         shop_cmdline(sap_data, turn)
         battle_cmdline()
         turn += 1
-
 
 
 def shop_cmdline(game_data, turn):
@@ -68,15 +65,29 @@ def shop_cmdline(game_data, turn):
     # turn_data["levelUpTier"]
 
     # Display shop pets and food
+    # Set gold to 10, track for buys/sells
 
+    # Randomly select animals for animalShopSlots (from available animals)
+
+    # Randomly select food for foodShopSlots (from available food)
+
+    # Display existing team
+    # Apply StartOfTurn effects from existing team (e.g. gold gains)
+
+    # User interactions:
+    # Buy shop animals or food
+    # Buy shop animal, combining into team animal
+    # Freeze/thaw shop animals or food
+    # Sell team animals
+    # Combine team animals
 
     return
-
 
 
 def battle_cmdline():
 
     return
+
 
 def run_game():
 
@@ -135,5 +146,4 @@ def shop_round(health, wins, turn, team, frozen):
 if __name__ == '__main__':
 
     data = read_most_recent_json("./data")
-    pets = [p for p in data["pets"].values()]
     print(data)
