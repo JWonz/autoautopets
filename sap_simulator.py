@@ -87,8 +87,8 @@ def shop_cmdline(game_data, pack, turn, team, pets_frozen, food_frozen):
     while is_turn:
         # Display Shop Animals, Food, and Team
         print(team)
-        print(pets_frozen, pets_shop)
-        print(food_frozen, food_shop)
+        print([p["image"]["unicodeCodePoint"] for p in pets_frozen], [p["image"]["unicodeCodePoint"] for p in pets_shop])
+        print([f["image"]["unicodeCodePoint"] for f in food_frozen], [f["image"]["unicodeCodePoint"] for f in food_shop])
 
         action = input("Roll, BuyXY, MovePetXY, EndTurn")
         # Roll - randomly repopulates unfrozen shop slots for 1 gold
@@ -102,8 +102,6 @@ def shop_cmdline(game_data, pack, turn, team, pets_frozen, food_frozen):
 
         print(f"User input was: {action}")
 
-        print("\u2764")  # prints a heart symbol
-        print("\u1F99F")
 
         if action == "EndTurn":
             is_turn = False
