@@ -1,8 +1,7 @@
 import random
-random.seed(1)
-
 from sap_metadata_cacher import read_most_recent_json
 
+random.seed(1)
 
 """
 Pipeline:
@@ -86,13 +85,21 @@ def shop_cmdline(game_data, pack, turn, team, pets_frozen, food_frozen):
 
     while is_turn:
         # Display Shop Animals, Food, and Team
-        print(team)
-        print([p["image"]["unicodeCodePoint"] for p in pets_frozen], [p["image"]["unicodeCodePoint"] for p in pets_shop])
-        print([f["image"]["unicodeCodePoint"] for f in food_frozen], [f["image"]["unicodeCodePoint"] for f in food_shop])
 
-        action = input("Roll, BuyXY, MovePetXY, EndTurn")
+        # Team needs to display:
+        # - animal
+        # - level
+        # - attack / health
+        # - status
+        # - (ability is implied)
+        print("Team:")
+        print(team)
+        print("Shop:", [p["image"]["unicodeCodePoint"] for p in pets_frozen], [p["image"]["unicodeCodePoint"] for p in pets_shop])
+        print("Food:", [f["image"]["unicodeCodePoint"] for f in food_frozen], [f["image"]["unicodeCodePoint"] for f in food_shop])
+
+        user_input = input("Roll, Buy X Y, Sell X, Move X Y, Freeze X, End")
         # Roll - randomly repopulates unfrozen shop slots for 1 gold
-        # BuyXY - buys X position pet or food, places on Y team slot
+        # Buy X Y - buys X position pet or food, places on Y team slot
         #       - Combines animal if possible
         #       - Slides un-combinable animals to right, last slot left
         #       - Fails if team is full
@@ -100,11 +107,11 @@ def shop_cmdline(game_data, pack, turn, team, pets_frozen, food_frozen):
         #       - Fails if food cannot be applied
         #       - Fails if not enough gold
 
-        print(f"User input was: {action}")
+        print(f"User input was: {user_input}")
+        action, *args = user_input.lower().split(" ")
+        handle_action(action, *args)
 
-
-        if action == "EndTurn":
-            is_turn = False
+# TODO - put all of this into classes to resolve global variable handling
 
         # User interactions:
         # Buy shop animals or food
@@ -116,31 +123,53 @@ def shop_cmdline(game_data, pack, turn, team, pets_frozen, food_frozen):
     return
 
 
+def handle_action(action, *args):
+    actions = {
+        'roll': roll,
+        'buy': buy,
+        'freeze': freeze,
+        'sell': sell,
+        'move': move,
+        'end': end_turn
+    }
+    return actions.get(action, default)(*args)
+
+
+def roll(*args):
+    return
+
+
+def buy(x, y):
+    return
+
+
+def freeze(x):
+    return
+
+
+def sell(x):
+    return
+
+
+def move(x, y):
+    return
+
+
+def end_turn(*args):
+    is_turn = False
+    return
+
+
+def default(*args):
+    return
+
+
 def battle_cmdline():
 
     return
 
 
 def run_game():
-
-    start_of_turn()
-    end_of_turn()
-    start_of_battle()
-
-    return
-
-
-def start_of_turn():
-
-    return
-
-
-def end_of_turn():
-
-    return
-
-
-def start_of_battle():
 
     return
 
