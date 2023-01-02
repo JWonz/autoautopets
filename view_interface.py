@@ -1,5 +1,8 @@
 class View:
-    def display_shop(self, state, pets_shop, food_shop):
+    def __init__(self, model):
+        self.model = model
+
+    def display_shop(self, state):
         pass
 
     def display_battle(self, data):

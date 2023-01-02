@@ -5,9 +5,9 @@ from view_interface import View
 
 
 class GameController:
-    def __init__(self, model=Model("StandardPack"), view=View(), seed=1):
+    def __init__(self, model=Model("StandardPack"), view=None, seed=1):
         self.model = model
-        self.view = view
+        self.view = view or View(self.model)
 
         random.seed(seed)
         self.is_shopping = False
@@ -16,8 +16,9 @@ class GameController:
             'hearts': 10,
             'trophy': 0,
             'team': [],  # {name, level, attack, health, status}
-            'frozen_pets': [],  # list of names
-            'frozen_food': []  # list of names
+            'shop_pets': [],  # {id, is_frozen}
+            'shop_food': [],  # {id, is_frozen}
+            'gold': 10
         }
 
     def run(self):
@@ -32,17 +33,8 @@ class GameController:
     def shop(self):
         # code to run the shop loop
         # Set gold to 10, track for buys/sells
-        gold = 10
-
-        # Randomly select animals/food (from available lists)
-        animal_list = self.model.get_animal_list(self.state['turn'])
-        food_list = self.model.get_food_list(self.state['turn'])
-
-        num_pet_slots = self.model.get_pet_shop_slots(self.state['turn'])
-        num_food_slots = self.model.get_food_shop_slots(self.state['turn'])
-
-        pets_shop = random.sample(animal_list, num_pet_slots - len(self.state['frozen_pets']))
-        food_shop = random.sample(food_list, num_food_slots - len(self.state['frozen_food']))
+        self.state['gold'] = 10
+        self.randomize_shop()
 
         # Display/Interaction loop
         self.is_shopping = True
@@ -51,7 +43,7 @@ class GameController:
         # TODO
 
         while self.is_shopping:
-            self.view.display_shop(self.state, pets_shop, food_shop)
+            self.view.display_shop(self.state)
             user_input = self.view.get_input_shop()
             print(f"User input was: {user_input}")
 
@@ -59,6 +51,21 @@ class GameController:
             self.handle_action(action, *args)
 
         return
+
+    def randomize_shop(self):
+        """Keeps all frozen items to left, randomizes the rest"""
+        f_pets = [p for p in self.state['shop_pets'] if p['is_frozen']]
+        f_food = [f for f in self.state['shop_food'] if f['is_frozen']]
+
+        # Randomly select animals/food (from available lists)
+        animal_list = self.model.get_animal_list(self.state['turn'])
+        food_list = self.model.get_food_list(self.state['turn'])
+
+        r_pets = random.sample(animal_list, self.model.get_pet_shop_slots(self.state['turn']) - len(f_pets))
+        r_food = random.sample(food_list, self.model.get_food_shop_slots(self.state['turn']) - len(f_food))
+
+        self.state['shop_pets'] = f_pets + [{'id': p, 'is_frozen': False} for p in r_pets]
+        self.state['shop_food'] = f_food + [{'id': f, 'is_frozen': False} for f in r_food]
 
     def handle_action(self, action, *args):
         actions = {
@@ -73,6 +80,8 @@ class GameController:
 
     def roll(self, *args):
         # Roll - randomly repopulates unfrozen shop slots for 1 gold
+        self.state['gold'] -= 1
+        self.randomize_shop()
         return
 
     def buy(self, x, y):
@@ -89,8 +98,9 @@ class GameController:
         return
 
     def freeze(self, x):
-        # Freeze/thaw shop animals or food
-        return
+        # Freeze/thaw shop animals or food - 1 to 7
+        int_x = int(x) - 1
+        self.state['shop_pets'][int_x]['is_frozen'] = not self.state['shop_pets'][int_x]['is_frozen']
 
     def sell(self, x):
         # Sell team animals
@@ -118,7 +128,8 @@ if __name__ == '__main__':
     from model_api import ModelApi
     from view_cmdline import SuperAutoCommandline
 
-    game = GameController(ModelApi("StandardPack"), SuperAutoCommandline())
+    model = ModelApi("StandardPack")
+    game = GameController(model, SuperAutoCommandline(model))
     game.run()
 
     """

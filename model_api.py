@@ -51,26 +51,30 @@ class ModelApi(Model):
             self.data = response.json()
 
     def get_animal_list(self, turn=0):
-        """Return list of all animal names, or for specific turn"""
+        """Return list of all animal ids, or for specific turn"""
         if self.pack == 'All':
-            return [p['name'] for p in self.data['pets'].values()]
+            return [p['id'] for p in self.data['pets'].values()
+                    if "EasterEgg" not in p["packs"]]
         elif turn == 0:
-            return [p['name'] for p in self.data['pets'].values() if self.pack in p['packs']]
+            return [p['id'] for p in self.data['pets'].values()
+                    if self.pack in p['packs']
+                    and "EasterEgg" not in p["packs"]]
         else:
             turn_data = self.get_turn_data(turn)
-            return [p for p in self.data["pets"].values()
+            return [p["id"] for p in self.data["pets"].values()
                     if p["tier"] == turn_data["tiersAvailable"]
-                    and self.pack in p["packs"]]
+                    and self.pack in p["packs"]
+                    and "EasterEgg" not in p["packs"]]
 
     def get_food_list(self, turn=0):
         """Return list of all food names, or for specific turn"""
         if self.pack == 'All':
-            return [f['name'] for f in self.data['foods'].values()]
+            return [f['id'] for f in self.data['foods'].values()]
         elif turn == 0:
-            return [f['name'] for f in self.data['foods'].values() if self.pack in f['packs']]
+            return [f['id'] for f in self.data['foods'].values() if self.pack in f['packs']]
         else:
             turn_data = self.get_turn_data(turn)
-            return [f for f in self.data["foods"].values()
+            return [f['id'] for f in self.data["foods"].values()
                     if f["tier"] == turn_data["tiersAvailable"]
                     and self.pack in f["packs"]]
 
@@ -90,6 +94,9 @@ class ModelApi(Model):
         """Return number of food slots for given turn"""
         turn_data = self.get_turn_data(turn)
         return turn_data["foodShopSlots"]
+
+    def get_emoji(self, uid, kind="pets"):
+        return self.data[kind][uid]["image"]["unicodeCodePoint"]
 
 
 if __name__ == '__main__':
