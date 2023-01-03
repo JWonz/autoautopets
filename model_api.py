@@ -29,7 +29,10 @@ class ModelApi(Model):
 
     def __init__(self, pack):
         super().__init__(pack)
-        self.get_superautopet_com()
+        self.data = read_most_recent_json("./data")
+        if self.data is None:
+            self.get_superautopet_com()
+        self.reformat_data()
 
     def save_locally(self):
         # Get the current timestamp
@@ -42,6 +45,11 @@ class ModelApi(Model):
         with open(file_name, 'w') as f:
             # Write the data to the file as JSON
             json.dump(self.data, f)
+
+    def reformat_data(self):
+        # TODO - put all pets and foods into an items list with "kind" attribute
+        # Allow fetching pet/food more efficiently
+        pass
 
     def get_superautopet_com(self):
         response = requests.get('https://superauto.pet/api.json')

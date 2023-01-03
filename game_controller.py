@@ -5,6 +5,10 @@ from view_interface import View
 
 
 class GameController:
+
+    max_team_slots = 5
+    max_shop_slots = 7
+
     def __init__(self, model=Model("StandardPack"), view=None, seed=1):
         self.model = model
         self.view = view or View(self.model)
@@ -31,7 +35,6 @@ class GameController:
         return self.state['hearts'] > 0 and self.state['trophy'] < 10
 
     def shop(self):
-        # code to run the shop loop
         # Set gold to 10, track for buys/sells
         self.state['gold'] = 10
         self.randomize_shop()
@@ -45,17 +48,15 @@ class GameController:
         while self.is_shopping:
             self.view.display_shop(self.state)
             user_input = self.view.get_input_shop()
-            print(f"User input was: {user_input}")
 
             action, *args = user_input.lower().split(" ")
             self.handle_action(action, *args)
-
         return
 
     def randomize_shop(self):
         """Keeps all frozen items to left, randomizes the rest"""
-        f_pets = [p for p in self.state['shop_pets'] if p['is_frozen']]
-        f_food = [f for f in self.state['shop_food'] if f['is_frozen']]
+        f_pets = [p for p in self.state['shop_pets'] if p is not None and p['is_frozen']]
+        f_food = [f for f in self.state['shop_food'] if f is not None and f['is_frozen']]
 
         # Randomly select animals/food (from available lists)
         animal_list = self.model.get_animal_list(self.state['turn'])
@@ -66,6 +67,21 @@ class GameController:
 
         self.state['shop_pets'] = f_pets + [{'id': p, 'is_frozen': False} for p in r_pets]
         self.state['shop_food'] = f_food + [{'id': f, 'is_frozen': False} for f in r_food]
+
+    def get_shop_item(self, x):
+        """# Returns the shop item at position x; or None if invalid"""
+        # x is 1 to max_shop_slots
+        # N + M <= max_shop_slots
+        # if = max_shop_slots, then pets stack is 1 to N, foods stack is max_shop_slots - N
+        # if < max_shop_slots, then pets stack is 1 to N, foods stack is max_shop_slots - M
+        p_i = int(x) - 1
+        f_i = self.max_shop_slots - int(x)
+        if len(self.state['shop_pets']) > p_i > -1 and self.state['shop_pets'][p_i] is not None:
+            return self.state['shop_pets'][p_i]
+        elif len(self.state['shop_food']) > f_i > -1 and self.state['shop_food'][f_i] is not None:
+            return self.state['shop_food'][f_i]
+        else:
+            return None
 
     def handle_action(self, action, *args):
         actions = {
@@ -80,9 +96,16 @@ class GameController:
 
     def roll(self, *args):
         # Roll - randomly repopulates unfrozen shop slots for 1 gold
-        self.state['gold'] -= 1
-        self.randomize_shop()
+        if self.state['gold'] > 0:
+            self.state['gold'] -= 1
+            self.randomize_shop()
         return
+
+    def freeze(self, x):
+        # Freeze/thaw shop animals or food - 1 to 7
+        item = self.get_shop_item(x)
+        if item is not None:
+            item['is_frozen'] = not item['is_frozen']
 
     def buy(self, x, y):
         # Buy shop animals or food
@@ -96,11 +119,6 @@ class GameController:
         #       - Fails if food cannot be applied
         #       - Fails if not enough gold
         return
-
-    def freeze(self, x):
-        # Freeze/thaw shop animals or food - 1 to 7
-        int_x = int(x) - 1
-        self.state['shop_pets'][int_x]['is_frozen'] = not self.state['shop_pets'][int_x]['is_frozen']
 
     def sell(self, x):
         # Sell team animals
@@ -119,7 +137,7 @@ class GameController:
 
     def battle(self):
         # code to run the battle loop
-        self.state['hearts'] -= 3
+        self.state['hearts'] -= 1
         pass
 
 
