@@ -32,7 +32,6 @@ class ModelApi(Model):
         self.data = read_most_recent_json("./data")
         if self.data is None:
             self.get_superautopet_com()
-        self.reformat_data()
 
     def save_locally(self):
         # Get the current timestamp
@@ -46,11 +45,6 @@ class ModelApi(Model):
             # Write the data to the file as JSON
             json.dump(self.data, f)
 
-    def reformat_data(self):
-        # TODO - put all pets and foods into an items list with "kind" attribute
-        # Allow fetching pet/food more efficiently
-        pass
-
     def get_superautopet_com(self):
         response = requests.get('https://superauto.pet/api.json')
 
@@ -61,15 +55,15 @@ class ModelApi(Model):
     def get_animal_list(self, turn=0):
         """Return list of all animal ids, or for specific turn"""
         if self.pack == 'All':
-            return [p['id'] for p in self.data['pets'].values()
+            return [p for p in self.data['pets'].values()
                     if "EasterEgg" not in p["packs"]]
         elif turn == 0:
-            return [p['id'] for p in self.data['pets'].values()
+            return [p for p in self.data['pets'].values()
                     if self.pack in p['packs']
                     and "EasterEgg" not in p["packs"]]
         else:
             turn_data = self.get_turn_data(turn)
-            return [p["id"] for p in self.data["pets"].values()
+            return [p for p in self.data["pets"].values()
                     if p["tier"] == turn_data["tiersAvailable"]
                     and self.pack in p["packs"]
                     and "EasterEgg" not in p["packs"]]
@@ -77,12 +71,12 @@ class ModelApi(Model):
     def get_food_list(self, turn=0):
         """Return list of all food names, or for specific turn"""
         if self.pack == 'All':
-            return [f['id'] for f in self.data['foods'].values()]
+            return [f for f in self.data['foods'].values()]
         elif turn == 0:
-            return [f['id'] for f in self.data['foods'].values() if self.pack in f['packs']]
+            return [f for f in self.data['foods'].values() if self.pack in f['packs']]
         else:
             turn_data = self.get_turn_data(turn)
-            return [f['id'] for f in self.data["foods"].values()
+            return [f for f in self.data["foods"].values()
                     if f["tier"] == turn_data["tiersAvailable"]
                     and self.pack in f["packs"]]
 
@@ -105,6 +99,10 @@ class ModelApi(Model):
 
     def get_emoji(self, uid, kind="pets"):
         return self.data[kind][uid]["image"]["unicodeCodePoint"]
+
+    def get_pet_ability(self, uid, level=1):
+        """Return ability for given uid and level"""
+        return self.data["pets"][uid]["level" + str(level) + "Ability"]
 
 
 if __name__ == '__main__':

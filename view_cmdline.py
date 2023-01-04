@@ -21,17 +21,28 @@ class SuperAutoCommandline(View):
 
     def to_string_team(self, team):
         max_slots = 5
-        output = f"|____|____|____|____|____|"
+        out_status = f""
+        out_levels = "|".join([f' {p["level"]}  ' if p is not None else "    " for p in team])
+        out_xp = "|".join([f' {p["xp"]}  ' if p is not None else "    " for p in team])
+        out_pets = "|".join([f' {self.model.get_emoji(p["id"], "pets")} ' if p is not None else " __ " for p in team])
+        out_attack = "|".join([f' {p["tempAttack"] + p["baseAttack"]}  ' if p is not None else "    " for p in team])
+        out_health = "|".join([f' {p["tempHealth"] + p["baseHealth"]}  ' if p is not None else "    " for p in team])
+
         output_labels = f"| 1  | 2  | 3  | 4  | 5  |"
-        return output
+        return "        " + out_status + "\n" \
+            + "Levels: " + out_levels + "\n" \
+            + "        " + out_pets + "\n" \
+            + "Attack: " + out_attack + "\n" \
+            + "Health: " + out_health + "\n" \
+            + "        " + output_labels
 
     def to_string_shop(self, pets, food):
         max_slots = 7
-        pet_pics = "|".join([f'❄️{self.model.get_emoji(p["id"], "pets")}❄️' if p['is_frozen']
-                             else f' {self.model.get_emoji(p["id"], "pets")} '
+        pet_pics = "|".join([(f'❄️{self.model.get_emoji(p["id"], "pets")}❄️' if p['is_frozen']
+                             else f' {self.model.get_emoji(p["id"], "pets")} ') if p is not None else " __ "
                              for p in pets])
-        food_pics = "|".join([f'❄️{self.model.get_emoji(f["id"], "foods")}❄️' if f['is_frozen']
-                              else f' {self.model.get_emoji(f["id"], "foods")} '
+        food_pics = "|".join([(f'❄️{self.model.get_emoji(f["id"], "foods")}❄️' if f['is_frozen']
+                              else f' {self.model.get_emoji(f["id"], "foods")} ') if f is not None else " __ "
                               for f in reversed(food)])
 
         # food_pics = "|".join([self.model.get_emoji(f['id'], "foods") for f in food])
@@ -48,5 +59,5 @@ class SuperAutoCommandline(View):
         return output1 + "\n" + output_labels
 
     def get_input_shop(self):
-        user_input = input("Roll, Freeze X, Buy X Y, Sell X, Move X Y, End")
+        user_input = input("Roll, Freeze X, Buy X Y, Sell X, Move X Y, End, Quit")
         return user_input

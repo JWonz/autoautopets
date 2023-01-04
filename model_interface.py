@@ -4,11 +4,11 @@ class Model:
         self.pack = pack
 
     def get_animal_list(self, turn=0):
-        """Return list of all animal ids, or for specific turn"""
+        """Return list of all animals, or for specific turn"""
         pass
 
     def get_food_list(self, turn=0):
-        """Return list of all food ids, or for specific turn"""
+        """Return list of all foods, or for specific turn"""
         pass
 
     def get_current_tier(self, turn):
@@ -25,4 +25,8 @@ class Model:
 
     def get_emoji(self, uid, kind="pets"):
         """Return emoji for given uid, and select for pets or food"""
+        pass
+
+    def get_pet_ability(self, uid, level=1):
+        """Return ability for given uid and level"""
         pass
