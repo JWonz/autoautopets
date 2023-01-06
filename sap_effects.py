@@ -2,11 +2,6 @@ def modify_stats(state, item, context):
     target = item['ability']['effect']['target']
     targets = sap_target_map[target['kind']](state, item, context)
 
-    # TODO -check this code; it's not right
-    for target in targets:
-        for stat in target['stats']:
-            target['stats'][stat] += item['ability']['effect']['amount']
-
     for t in targets:
         if item['ability']['effect']['untilEndOfBattle']:
             t['tempAttack'] += item['ability']['effect']['attackAmount']
