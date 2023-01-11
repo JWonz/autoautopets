@@ -87,6 +87,23 @@ class GameController:
                                              'is_pet': False
                                              } for f in r_food]
 
+    def add_new_item_to_shop(self, item, is_pet, shop):
+        new_item = {'id': item['id'],
+                    'cost': getattr(item, 'cost', self.default_cost),
+                    'is_frozen': False,
+                    'ability': item['level1Ability'] if is_pet else item['ability'],
+                    'is_pet': is_pet
+                    }
+        if is_pet:
+            new_item['baseAttack'] = item['baseAttack']
+            new_item['baseHealth'] = item['baseHealth']
+
+        shop.append(new_item)
+
+    def get_random_pet(self, tier):
+        """Returns a random pet from the shop"""
+        return random.choice(self.model.get_animal_list_tier(tier))
+
     def get_shop_item(self, x):
         """# Returns the shop item at position x; or None if invalid"""
         # x is 1 to max_shop_slots
@@ -162,11 +179,15 @@ class GameController:
                     if self.state['team'][y_i]['xp'] == self.state['team'][y_i]['level'] + 1:
                         self.state['team'][y_i]['level'] += 1
                         self.state['team'][y_i]['xp'] = 0
+
+                        level_up_tier = model.get_level_up_tier(self.state['turn'])
+                        if len(self.state['shop_pets'] + self.state['shop_food']) < self.max_shop_slots:
+                            self.add_new_item_to_shop(self.get_random_pet(level_up_tier), True, self.state['shop_pets'])
                 else:
                     return  # Cannot buy animal onto different one -- TODO: replace with error message
 
             # Remove from shop
-            self.state['shop_pets'][self.state['shop_pets'].index(item)] = None
+            self.state['shop_pets'].remove(item)
             # TODO - improve control logic - this can easily get confusing when the item was successful or not
 
         else:
@@ -191,7 +212,7 @@ class GameController:
             # Food used with general effect (apply to random pets or shop)
 
             # Remove from shop
-            self.state['shop_food'][self.state['shop_food'].index(item)] = None
+            self.state['shop_food'].remove(item)
             return
 
         # Buy shop animals or food
@@ -210,8 +231,38 @@ class GameController:
         # Sell team animals
         return
 
-    def move(self, x, y):
+    def move(self, y1, y2):
+        """Move pet, shifting others based on blank space, or combine if same animal"""
         # Combine team animals # turn_data["levelUpTier"]
+        y1 = int(y1) - 1
+        y2 = int(y2) - 1
+
+        if self.state['team'][y1] is not None:
+            if self.state['team'][y2] is not None and self.state['team'][y2]['id'] == self.state['team'][y1]['id']:
+                # Same animal so combine!
+                self.state['team'][y2]['xp'] += 1
+                self.state['team'][y2]['baseAttack'] += 1
+                self.state['team'][y2]['baseHealth'] += 1
+
+                if self.state['team'][y2]['tempAttack'] == 0 and self.state['team'][y2]['tempHealth'] == 0:
+                    self.state['team'][y2]['tempAttack'] = self.state['team'][y1]['tempAttack']
+                    self.state['team'][y2]['tempHealth'] = self.state['team'][y1]['tempHealth']
+
+                if self.state['team'][y2]['xp'] == self.state['team'][y2]['level'] + 1:
+                    self.state['team'][y2]['level'] += 1
+                    self.state['team'][y2]['xp'] = 0
+
+                    level_up_tier = model.get_level_up_tier(self.state['turn'])
+                    if len(self.state['shop_pets'] + self.state['shop_food']) < self.max_shop_slots:
+                        self.add_new_item_to_shop(self.get_random_pet(level_up_tier), True, self.state['shop_pets'])
+
+                # Combined, so remove old animal
+                self.state['team'][y1] = None
+
+            else:
+                # Different animals, so move
+                self.state['team'].insert(y2, self.state['team'].pop(y1))
+
         return
 
     def end_turn(self, *args):

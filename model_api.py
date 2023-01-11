@@ -68,6 +68,13 @@ class ModelApi(Model):
                     and self.pack in p["packs"]
                     and "EasterEgg" not in p["packs"]]
 
+    def get_animal_list_tier(self, tier):
+        """Return list of animals for given tier"""
+        return [p for p in self.data['pets'].values()
+                if p["tier"] == tier
+                and self.pack in p['packs']
+                and "EasterEgg" not in p["packs"]]
+
     def get_food_list(self, turn=0):
         """Return list of all food names, or for specific turn"""
         if self.pack == 'All':
@@ -85,7 +92,11 @@ class ModelApi(Model):
 
     def get_current_tier(self, turn):
         """Return tier for given turn"""
-        pass
+        return self.get_turn_data(turn)["tiersAvailable"]
+
+    def get_level_up_tier(self, turn):
+        """Return level up tier"""
+        return self.get_turn_data(turn)["levelUpTier"]
 
     def get_pet_shop_slots(self, turn):
         """Return number of pet slots for given turn"""

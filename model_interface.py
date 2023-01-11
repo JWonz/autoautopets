@@ -7,12 +7,20 @@ class Model:
         """Return list of all animals, or for specific turn"""
         pass
 
+    def get_animal_list_tier(self, tier):
+        """Return list of animals for given tier"""
+        pass
+
     def get_food_list(self, turn=0):
         """Return list of all foods, or for specific turn"""
         pass
 
     def get_current_tier(self, turn):
         """Return tier for given turn"""
+        pass
+
+    def get_level_up_tier(self, turn):
+        """Return level up tier"""
         pass
 
     def get_pet_shop_slots(self, turn):
